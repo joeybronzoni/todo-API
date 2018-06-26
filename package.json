@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/joeybronzoni/todo-API#readme",
   "dependencies": {
+    "dotenv": "^6.0.0",
     "mongodb": "^2.2.5"
   }
 }

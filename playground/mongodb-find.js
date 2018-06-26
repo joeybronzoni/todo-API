@@ -2,7 +2,7 @@ const { MongoClient, ObjectID } = require('mongodb');
 
 // import environmental variables from our variables.env file
 require('dotenv').config({ path: 'variables.env' });
-
+console.log('here: ', process.env.DATABASE);
 let obj = new ObjectID();
 console.log('obj: ', obj);
 
