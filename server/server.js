@@ -40,6 +40,8 @@ const server = app.listen(PORT, () => {
 });
 
 
+module.exports = { app };
+
 
 // TODO:
 /* mongoose
