@@ -17,6 +17,7 @@ const app = express();
 */
 app.use(bodyParser.json());
 
+// ------------------todos routes ----------------------------------//
 /* POST /todos route:
    Now we need to create the todo using the information that comes from the user
    by creating an instance of a mongoose model
@@ -47,6 +48,31 @@ app.get('/todos', (req,res) => {
 	res.status(400).send(e);
   });
 });
+
+// ------------------End todos routes ----------------------------------//
+
+// ------------------users routes ----------------------------------//
+app.post('/users', (req, res) => {
+  var user = new User({
+	email: req.body.email
+  });
+
+  user.save().then((doc) => {
+	res.send(doc);
+  }, (e) => {
+	res.status(400).send(e);
+  });
+});
+
+app.get('/users', (req,res) => {
+  User.find().then((users) => {
+	res.send({ users });
+  }, (e) => {
+	res.status(400).send(e);
+  });
+});
+// ------------------End users routes ----------------------------------//
+
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
 const server = app.listen(PORT, () => {
