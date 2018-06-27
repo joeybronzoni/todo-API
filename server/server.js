@@ -17,10 +17,11 @@ const app = express();
 */
 app.use(bodyParser.json());
 
-/* Now we need to create the todo using the information that comes from the user
-	 by creating an instance of a mongoose model*/
+/* POST /todos route:
+   Now we need to create the todo using the information that comes from the user
+   by creating an instance of a mongoose model
+*/
 app.post('/todos', (req, res) => {
-
   var todo = new Todo({
 	text: req.body.text
   });
@@ -32,7 +33,20 @@ app.post('/todos', (req, res) => {
   });
 });
 
-
+/* GET /todos route:
+   responsible for returning all todos, used to list all of the todos
+   *!*Note that we could use res.send(todos) which returns an array but that will
+   lock us down if we wanted to add an item to the array like a custom status code
+   and a better way would be to use an object with ES6 syntax. Using an object we are
+   opening up to a more flexible future .
+*/
+app.get('/todos', (req,res) => {
+  Todo.find().then((todos) => {
+	res.send({ todos });
+  }, (e) => {
+	res.status(400).send(e);
+  });
+});
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
 const server = app.listen(PORT, () => {
