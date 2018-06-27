@@ -1,5 +1,7 @@
 const expect = require('expect');
 const request = require('supertest');
+const { ObjectID } = require('mongodb');
+
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
@@ -11,9 +13,12 @@ const { Todo } = require('./../models/todo');
    items in it
 */
 
+// !*!*!note: new ObjectId will give us an OID(_id) to play with for our tests
 const todos = [{
+  _id: new ObjectID(),
   text: 'First test todo'
 },{
+  _id: new ObjectID(),
   text: 'Second test todo'
 }];
 
@@ -98,11 +103,54 @@ describe('GET /todos', () => {
 });
 
 
+// Create 3 test cases for the GET /todos/:id route
+// TODO:
+/* /todos/:id
+   -1) fetches individual todo item and verify a 404 when passing in an invalid _id
+   -2) to veify when we pass in a valid id but doesn't match a doc we get 404
+   -3) when we pass in a valid id that does match a doc that the doc actually comes back in the response
+*/
+
+describe('GET /todo/:id', () => {
+ //  Use conditional or expect()
+  it('does return todo doc', (done) => {
+
+	request(app)
+	  .get(`/todos/${todos[0]._id.toHexString()}`)
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.body.todo.text).toBe(todos[0].text);
+	  })
+	  .end(done);
+  });
+
+  //  Use conditional or expect()
+  it('does return 404 if todo not found', (done) => {
+	const hexId = new ObjectID().toHexString();
+
+	request(app)
+	  .get(`/todos/${hexId}`)
+	  .expect(404)
+	  .end(done);
+  });
+
+  //  Use conditional or expect()
+  it('does return 404 for non-object ids', (done) => {
+	let id = '123';
+	request(app)
+	  .get('/todos/123abs')
+	  .expect(404)
+	  .end(done);
+
+  });
 
 
+});
 
 
-	/* add a second test case that verifies that a todo does not get created when
-	   we send bad data */
-	//  Use conditional or expect()
-	//  Use conditional or expect()
+// // should return a 404 if todo not found
+// --use real objectId use toHexString
+// -- make sure to get a 404 back- set up status code
+
+// // it shoul return 404 for non-object ids
+// -- /todos/123
