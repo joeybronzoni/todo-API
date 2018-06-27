@@ -116,7 +116,7 @@ app.get('/users', (req,res) => {
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
 const server = app.listen(PORT, () => {
-  console.log(`Express running on PORT, ${PORT}       →`);
+  console.log(`Express running on PORT, ${PORT}         →`);
 });
 
 
