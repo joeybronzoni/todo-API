@@ -26,24 +26,24 @@ if (!ObjectID.isValid(id)) {
   console.log(`ID is not valid`);
 }
 
-// Todo.find({
-//   _id: id
-// }).then((todos) => {
-//   console.log(`Promise todos:\n ${todos}\n`);
-// });
+Todo.find({
+  _id: id
+}).then((todos) => {
+  console.log(`Promise todos:\n ${todos}\n`);
+});
 
-// Todo.findOne({
-//   _id: id
-// }).then((todo) => {
-//   if (!todo) {
-// 	return console.log('ID not found\n');
-//   }
-//   console.log(`Promise from todo: \n${todo}\n`);
-// });
+Todo.findOne({
+  _id: id
+}).then((todo) => {
+  if (!todo) {
+	return console.log('ID not found\n');
+  }
+  console.log(`Promise from todo: \n${todo}\n`);
+});
 
-// Todo.findById(id).then((todo) => {
-//   console.log(`Promise from todo findById: \n${todo}`);
-// }).catch((e) => console.log(e));
+Todo.findById(id).then((todo) => {
+  console.log(`Promise from todo findById: \n${todo}`);
+}).catch((e) => console.log(e));
 
 /*
 We can handle the findById() errors with catch() but a better way might be to

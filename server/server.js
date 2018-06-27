@@ -1,6 +1,8 @@
 // Lib imports
 const express = require('express');
 const bodyParser = require('body-parser');
+const { ObjectID } = require('mongodb');
+
 
 // Local imports
 const { mongoose } = require('./db/mongoose');
@@ -49,7 +51,44 @@ app.get('/todos', (req,res) => {
   });
 });
 
+//  GET /todo/123
+app.get('/todos/:id', (req,res) => {
+  const id = req.params.id;
+
+  // validate id
+  if (!ObjectID.isValid(id)) {
+    //404 send back empty send: use return to stop the execution
+	return res.status(404).send();
+  }
+  // findById()
+  Todo.findById(id).then((todo) => {
+
+	if (!todo) {
+	  // use return to stop the execution
+	  return res.status(404).send();
+	}
+	/* success: we don't want to send the todo back in case of sensitive info
+	   !*!* Note, we could send the res like this: res.send(todo) and that would work but we should
+	   send it in an object where the todo is attached as a property using ES6 object definition so
+	   we can tac on custom status codes etc.
+	*/
+	res.send({ todo });
+  }).catch((e) => {
+	// we may not want to send any sensitive info back
+	res.status(400).send();
+  });
+
+      // if todo send it back
+      // if not todo - send back a 404 with empty body
+
+   // error
+    //400 - and send empty body back
+
+});
+
+
 // ------------------End todos routes ----------------------------------//
+
 
 // ------------------users routes ----------------------------------//
 app.post('/users', (req, res) => {
@@ -72,6 +111,7 @@ app.get('/users', (req,res) => {
   });
 });
 // ------------------End users routes ----------------------------------//
+
 
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
