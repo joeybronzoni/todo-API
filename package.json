@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/joeybronzoni/todo-API#readme",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "dotenv": "^6.0.0",
-    "mongodb": "^2.2.5"
+    "express": "^4.14.0",
+    "mongodb": "^2.2.5",
+    "mongoose": "^4.5.9"
   }
 }
