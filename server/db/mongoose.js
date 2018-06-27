@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 require('dotenv').config({ path: 'variables.env' });
 
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.DATABASE);
+mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE);
 // mongoose.connect('mongodb://localhost:27017/TodoApp');
 
 
