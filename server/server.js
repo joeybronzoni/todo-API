@@ -1,4 +1,5 @@
 // Lib imports
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
@@ -132,6 +133,46 @@ app.delete('/todos/:id', (req, res) => {
 
 // ------------------End delete todos routes ----------------------------------//
 
+
+
+// ------------------patch todo routes ----------------------------------//
+
+app.patch('/todos/:id', (req,res) => {
+
+  var id = req.params.id;console.log('id: ', id);
+  /* create a body variable that has a subset of the things that the user passed to us. We don't want to user to be able to update anything they choose */
+  var body = _.pick(req.body, ['text', 'completed']);
+  console.log('body: ', body);
+
+  // validate id --> not valid? return 404
+  if (!ObjectID.isValid(id)) {
+	return res.status(404).send();
+  }
+
+  /* we update the completed_at property based off of the completed propery */
+  if (_.isBoolean(body.completed) && body.completed) {
+	console.log('this: ', this);
+	body.completed_at = new Date().getTime();
+  } else {
+	body.completed = false;
+	body.completed_at = null;
+  }
+
+  /* We make are call to findByIdAndUpdate */
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+	if (!todo) {
+	  return res.status(400).send();
+	}
+	console.log('todo: ', todo);
+	res.send({todo});
+  })
+	.catch((err) => {
+	  res.status(400).send();
+	});
+
+});
+
+// ------------------end patch todo routes ----------------------------------//
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
 const server = app.listen(PORT, () => {
