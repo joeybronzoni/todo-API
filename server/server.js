@@ -19,6 +19,7 @@ const app = express();
 */
 app.use(bodyParser.json());
 
+
 // ------------------todos routes ----------------------------------//
 /* POST /todos route:
    Now we need to create the todo using the information that comes from the user
@@ -112,6 +113,30 @@ app.get('/users', (req,res) => {
 });
 // ------------------End users routes ----------------------------------//
 
+
+
+// ------------------delete todo routes ----------------------------------//
+app.delete('/todos/:id', (req, res) => {
+  // get id
+  const id = req.params.id;
+
+  // validate id --> not valid? return 404
+  if (!ObjectID.isValid(id)) {
+	return res.status(404).send();
+  }
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+	// remove todo by id
+	if (!todo) {
+	  return res.status(404).send();
+	}
+
+	res.send({todo});
+  }).catch((e) => {res.status(400).send();});
+
+});
+
+// ------------------End delete todos routes ----------------------------------//
 
 
 // Use `Express running → PORT ${server.address().port}` with back-tics for random port
