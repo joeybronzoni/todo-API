@@ -124,7 +124,6 @@ describe('GET /todo/:id', () => {
 	  .end(done);
   });
 
-  //  Use conditional or expect()
   it('does return 404 if todo not found', (done) => {
 	const hexId = new ObjectID().toHexString();
 
@@ -148,9 +147,61 @@ describe('GET /todo/:id', () => {
 });
 
 
-// // should return a 404 if todo not found
-// --use real objectId use toHexString
-// -- make sure to get a 404 back- set up status code
+// DELETE /todos/:id:
+/* List
+   -
+   -
+   -
+   -
+   -
+*/
 
-// // it shoul return 404 for non-object ids
-// -- /todos/123
+describe('DELETE /todos/:id', () => {
+
+  /* we need to send off req but after the req comes back we need to expect a few things about it, and we want to query the database making sure the tod was removed from collection  */
+  //  Use conditional or expect()
+  it('does  remove a todo', (done) => {
+	let hexId = todos[1]._id.toHexString();
+	request(app)
+	  .delete(`/todos/${hexId}`)
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.body.todo._id).toBe(hexId);
+	  })
+	  .end((err, res) => {
+		if (err) {
+		  return done(err);
+		}
+		// query db using findById() toNotExist
+		Todo.findById(hexId).then((todo) => {
+		  expect(todo).toNotExist(hexId);
+		  done();
+		})
+		  .catch((err) => done(err));
+
+	  });
+
+  });
+
+
+
+  //  Use conditional or expect()
+  it('does return a 404 if todo not found', (done) => {
+  	const hexId = new ObjectID().toHexString();
+
+	request(app)
+	  .delete(`/todos/${hexId}`)
+	  .expect(404)
+	  .end(done);
+  });
+
+  //  Use conditional or expect()
+  it('does return 404 if object id is invalid', (done) => {
+  	let id = '12345sdf';
+  	request(app)
+	  .delete('/todos/123abs')
+	  .expect(404)
+	  .end(done);
+
+  });
+});

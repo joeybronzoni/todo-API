@@ -79,12 +79,6 @@ app.get('/todos/:id', (req,res) => {
 	res.status(400).send();
   });
 
-      // if todo send it back
-      // if not todo - send back a 404 with empty body
-
-   // error
-    //400 - and send empty body back
-
 });
 
 
