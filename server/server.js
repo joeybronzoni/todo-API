@@ -159,6 +159,19 @@ app.patch('/todos/:id', (req,res) => {
   }
 
 
+  /* We make are call to findByIdAndUpdate */
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+	if (!todo) {
+	  return res.status(400).send();
+	}
+	console.log('todo: ', todo);
+	res.send({todo});
+  })
+	.catch((err) => {
+	  res.status(400).send();
+	});
+
+});
 
 // ------------------end patch todo routes ----------------------------------//
 
