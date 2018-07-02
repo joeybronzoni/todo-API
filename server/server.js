@@ -1,3 +1,5 @@
+require('./config/config');
+
 // Lib imports
 const _ = require('lodash');
 const express = require('express');
@@ -9,7 +11,7 @@ const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose');
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT; // || 8080;
 
 const app = express();
 
