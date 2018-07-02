@@ -139,19 +139,21 @@ app.delete('/todos/:id', (req, res) => {
 
 app.patch('/todos/:id', (req,res) => {
 
-  var id = req.params.id;console.log('id: ', id);
-  /* create a body variable that has a subset of the things that the user passed to us. We don't want to user to be able to update anything they choose */
+  // grab id form parameters
+  var id = req.params.id;
+
+  /* create a body variable that has a subset of the things that the user passed to us.
+	 We don't want to user to be able to update anything they choose so the _.pick() utility
+	 method gives us this option*/
   var body = _.pick(req.body, ['text', 'completed']);
-  console.log('body: ', body);
 
   // validate id --> not valid? return 404
   if (!ObjectID.isValid(id)) {
 	return res.status(404).send();
   }
 
-  /* we update the completed_at property based off of the completed propery */
+  /* we update the completed_at property based off of the completed property */
   if (_.isBoolean(body.completed) && body.completed) {
-	console.log('this: ', this);
 	body.completed_at = new Date().getTime();
   } else {
 	body.completed = false;
@@ -160,13 +162,14 @@ app.patch('/todos/:id', (req,res) => {
 
 
   /* We make are call to findByIdAndUpdate */
-  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
-	if (!todo) {
-	  return res.status(400).send();
-	}
-	console.log('todo: ', todo);
-	res.send({todo});
-  })
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true})
+	.then((todo) => {
+	  if (!todo) {
+		return res.status(400).send();
+	  }
+	  console.log('todo, line 170-server.js: ', todo);
+	  res.send({todo});
+	})
 	.catch((err) => {
 	  res.status(400).send();
 	});

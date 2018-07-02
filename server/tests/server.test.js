@@ -19,7 +19,9 @@ const todos = [{
   text: 'First test todo'
 },{
   _id: new ObjectID(),
-  text: 'Second test todo'
+  text: 'Second test todo',
+  completed: true,
+  completed_at: 333
 }];
 
 /* Our tests change a little for the GET /todos so this was beforeEach for just our posts tests:
@@ -204,4 +206,58 @@ describe('DELETE /todos/:id', () => {
 	  .end(done);
 
   });
+});
+
+
+
+// PATCH /todos:
+/* List
+   -
+   -
+   -
+   -
+   -
+*/
+
+describe('PATCH /todos/:id', () => {
+  //  Use conditional or expect()
+  it('does update the todo', (done) => {
+	let hexId = todos[0]._id.toHexString();
+	let text = 'this should be the new text';
+	request(app)
+	  .patch(`/todos/${hexId}`)
+	  .send({
+		completed: true,
+		text
+	  })
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.body.todo.text).toBe(text);
+		expect(res.body.todo.completed).toBe(true);
+		expect(res.body.todo.completed_at).toBeA('number');
+	  })
+	  .end(done);
+  });
+
+  //  Use conditional or expect()
+  it('does clear completed_at when todo is not completed', (done) => {
+	let hexId = todos[1]._id.toHexString();
+	let completed_at = todos[1].completed_at;
+	let text = 'This should be new text!!!';
+	request(app)
+	  .patch(`/todos/${hexId}`)
+	  .send({
+		text,
+		completed_at
+	  })
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.body.todo.text).toBe(text);
+		expect(res.body.todo.completed).toBe(false);
+		expect(res.body.todo.completed_at).toNotExist();
+	  })
+	  .end(done);
+  });
+
+
 });
