@@ -86,14 +86,13 @@ UserSchema.pre('save', function (next) {
 		// set it user.password = hash;
 		console.log('hashed passwd: ', hash);
 		bcrypt.compare(user.password, hash, (err, res) => {
+		  // in this CB is where we get the hashed password
 		  user.password = hash;
 		  console.log('res: ', res);;
 		next();
 		});
-
 	  });
 	});
-
 
 
   } else {

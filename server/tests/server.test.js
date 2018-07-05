@@ -5,39 +5,15 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
+const { User } = require('./../models/user');
+const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 
-/* we need to add a testing lifecyle method (bfE) to make sure that the database is empty
-   -in order to get data for our GET /todos tests we need to have some data in the db
-   our tests will run with no data but our GET expects data so we modify our beforeEach() to add
-   some seed data. It will still be predictable, it will look the same when it starts, but will have some
-   items in it
-*/
 
-// !*!*!note: new ObjectId will give us an OID(_id) to play with for our tests
-const todos = [{
-  _id: new ObjectID(),
-  text: 'First test todo'
-},{
-  _id: new ObjectID(),
-  text: 'Second test todo',
-  completed: true,
-  completed_at: 333
-}];
+//moved seeding functions to seeds.js
 
-/* Our tests change a little for the GET /todos so this was beforeEach for just our posts tests:
-
-beforeEach((done) => {
-  Todo.remove({}).then(() => done());
-});
-*/
-
-beforeEach((done) => {
-  Todo.remove({}).then(() => {
-	return Todo.insertMany(todos);
-  }).then(() => {
-	done();
-  });
-});
+// moved seed function in beforeEach() to seeds.js
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 
 describe('POST /todos', () => {
@@ -105,14 +81,6 @@ describe('GET /todos', () => {
 });
 
 
-// Create 3 test cases for the GET /todos/:id route
-// TODO:
-/* /todos/:id
-   -1) fetches individual todo item and verify a 404 when passing in an invalid _id
-   -2) to veify when we pass in a valid id but doesn't match a doc we get 404
-   -3) when we pass in a valid id that does match a doc that the doc actually comes back in the response
-*/
-
 describe('GET /todo/:id', () => {
  //  Use conditional or expect()
   it('does return todo doc', (done) => {
@@ -149,18 +117,8 @@ describe('GET /todo/:id', () => {
 });
 
 
-// DELETE /todos/:id:
-/* List
-   -
-   -
-   -
-   -
-   -
-*/
-
 describe('DELETE /todos/:id', () => {
 
-  /* we need to send off req but after the req comes back we need to expect a few things about it, and we want to query the database making sure the tod was removed from collection  */
   //  Use conditional or expect()
   it('does  remove a todo', (done) => {
 	let hexId = todos[1]._id.toHexString();
@@ -208,17 +166,6 @@ describe('DELETE /todos/:id', () => {
   });
 });
 
-
-
-// PATCH /todos:
-/* List
-   -
-   -
-   -
-   -
-   -
-*/
-
 describe('PATCH /todos/:id', () => {
   //  Use conditional or expect()
   it('does update the todo', (done) => {
@@ -257,6 +204,112 @@ describe('PATCH /todos/:id', () => {
 		expect(res.body.todo.completed_at).toNotExist();
 	  })
 	  .end(done);
+  });
+
+
+
+
+});
+
+
+describe('GET /users/me', () => {
+  //  Use conditional or expect()
+  it('does return a user if authenticated', (done) => {
+
+	  request(app)
+		.get('/users/me')
+		.set('x-auth', users[0].tokens[0].token)
+		.expect(200)
+		.expect((res) => {
+		  expect(res.body._id).toBe(users[0]._id.toHexString());
+		  expect(res.body.email).toBe(users[0].email);
+		})
+		.end(done);
+	});
+
+	// make a call to the users/me route
+	// don't prvoide a x-auth token and expect a 401 also expect body is = empty object with toEqual()
+	//  Use conditional or expect()
+	it('does return 401 if not authenticated', (done) => {
+
+	  request(app)
+		.get('/users/me')
+		.expect(401)
+		.expect((res) => {
+		  expect(res.body).toEqual({});
+		})
+		.end(done);
+	});
+  });
+
+describe('POST /users', () => {
+
+  it('does create a user', (done) => {
+	var email = 'example@gmail.com';
+	var password = '123asdr';
+	request(app)
+	  .post('/users')
+	  .send({email, password})
+	  .expect(200)
+	  .expect((res) => {
+		console.log('res here:" ', res.body);
+		expect(res.headers['x-auth']).toExist();
+		expect(res.body._id).toExist();
+		expect(res.body.email).toBe(email);
+	  })
+	  .end((err) => {
+		if (err) {
+		  return done(err);
+		}
+
+		User.findOne({email}).then((user) => {
+		  expect(user).toExist();
+		  expect(user.password).toNotBe(password);
+		  done();
+		});
+
+
+	  });
+  });
+
+  //  Use conditional or expect()
+  it('does return validation errors if request invalid', (done) => {
+	var email = 'ail.com';
+	var password = 'sdr';
+
+	request(app)
+	  .post('/users')
+	  .send({email, password})
+	  .expect(400)
+	  .expect((res) => {
+		expect(email).toExist();
+	  })
+	  .end(done());
+
+  });
+
+  //  Use conditional or expect()
+  it('does not create user if email in use', (done) => {
+	var email = users[0].email;
+	var password = '123asdr';
+
+	request(app)
+	  .post('/users')
+	  .send({email, password})
+	  .expect(400)
+	  .expect((res) => {
+		expect(email).toExist();
+	  })
+	  .end((err) => {
+		if (err) {
+		  return done(err);
+		}
+
+		User.findOne({ email }).then((user) => {
+		  expect(user).toExist();
+		  done();
+		});
+	  });
   });
 
 
