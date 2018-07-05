@@ -40,21 +40,36 @@ UserSchema.methods.toJSON = function () {
   return _.pick(userObject, ['_id', 'email']);
 };
 
-
-// These will be the instance methods and because we need the 'this' keyword to bind we use an ES5 function
 UserSchema.methods.generateAuthToken = function () {
   const user = this;
   const access = 'auth';
   const token = jwt.sign({_id: user._id.toHexString(), access}, 'OliverJames').toString();
 
   user.tokens = user.tokens.concat([{access, token}]);
-    /*there are some inconsistencies accross diff mongoose versions so changed push() out for concat()
+  /*there are some inconsistencies accross diff mongoose versions so changed push() out for concat()
 	   user.tokens.push({acess, token});
 	*/
 
-
   return user.save().then(() => {
 	return token;
+  });
+
+};
+
+UserSchema.statics.findByToken = function(token) {
+  const User = this;
+  let decoded;
+
+  try {
+	decoded = jwt.verify(token, 'OliverJames');
+  } catch (error) {
+	return Promise.reject();
+  }
+
+  return User.findOne({
+	'_id': decoded._id,
+	'tokens.token': token,
+	'tokens.access': 'auth'
   });
 
 };

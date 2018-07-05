@@ -11,6 +11,7 @@ const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose');
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
+const { authenticate } = require('./middleware/authenticate');
 const PORT = process.env.PORT; // || 8080;
 
 const app = express();
@@ -38,7 +39,6 @@ app.get('/todos', (req,res) => {
   });
 });
 
-//  GET /todo/123
 app.get('/todos/:id', (req,res) => {
   const id = req.params.id;
 
@@ -67,37 +67,6 @@ app.get('/todos/:id', (req,res) => {
 
 });
 
-// ------------------End todos routes ----------------------------------//
-
-
-// ------------------users routes ----------------------------------//
-app.post('/users', (req, res) => {
-  var body = _.pick(req.body, ['email', 'password']);
-
-  var user = new User(body);
-
-  user.save()
-	.then(() => {
-	  return user.generateAuthToken();
-	}).then((token) => {
-	  res.header('x-auth', token).send(user);
-	}).catch((e) => {
-	  // console.log('this is the error: ', e.errmsg);
-	  res.status(400).send(e);
-	});
-});
-
-app.get('/users', (req,res) => {
-  User.find().then((users) => {
-	res.send({ users });
-  }, (e) => {
-	res.status(400).send(e);
-  });
-});
-// ------------------End users routes ----------------------------------//
-
-
-// ------------------delete todo routes ----------------------------------//
 // use pick to grab the email and the password
 app.delete('/todos/:id', (req, res) => {
   // get id
@@ -118,11 +87,6 @@ app.delete('/todos/:id', (req, res) => {
   }).catch((e) => {res.status(400).send();});
 
 });
-
-// ------------------End delete todos routes ----------------------------------//
-
-
-// ------------------patch todo routes ----------------------------------//
 
 app.patch('/todos/:id', (req,res) => {
 
@@ -163,9 +127,34 @@ app.patch('/todos/:id', (req,res) => {
 
 });
 
-// ------------------end patch todo routes ----------------------------------//
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
 
-// Use `Express running → PORT ${server.address().port}` with back-tics for random port
+  var user = new User(body);
+
+  user.save()
+	.then(() => {
+	  return user.generateAuthToken();
+	}).then((token) => {
+	  res.header('x-auth', token).send(user);
+	}).catch((e) => {
+	  // console.log('this is the error: ', e.errmsg);
+	  res.status(400).send(e);
+	});
+});
+
+app.get('/users', (req,res) => {
+  User.find().then((users) => {
+	res.send({ users });
+  }, (e) => {
+	res.status(400).send(e);
+  });
+});
+
+app.get('/users/me', authenticate, (req,res) => {
+  res.send(req.user);
+});
+
 const server = app.listen(PORT, () => {
   console.log(`Express running on PORT, ${PORT}         →`);
 });
