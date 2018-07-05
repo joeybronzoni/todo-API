@@ -1,14 +1,68 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
-// create a model
-let User = mongoose.model('Users', {
+var UserSchema = new mongoose.Schema({
   email: {
 	type: String,
 	required: true,
 	trim: true,
-	minlength: 4
-  }
+	minlength: 4,
+	unique: true,
+	validate: {
+	  validator: validator.isEmail,
+	  message: '{VALUE} is not a valid email'
+	}
+  },
+  password: {
+	type: String,
+	require: true,
+	minlength: 7
+  },
+  tokens: [{
+	access: {
+	  type: String,
+	  required: true
+	},
+	token: {
+	  type: String,
+	  required: true
+	}
+  }]
 });
+
+// We can overide a method to update how mongoose handles certain things
+UserSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  return _.pick(userObject, ['_id', 'email']);
+};
+
+
+// These will be the instance methods and because we need the 'this' keyword to bind we use an ES5 function
+UserSchema.methods.generateAuthToken = function () {
+  const user = this;
+  const access = 'auth';
+  const token = jwt.sign({_id: user._id.toHexString(), access}, 'OliverJames').toString();
+
+  user.tokens = user.tokens.concat([{access, token}]);
+    /*there are some inconsistencies accross diff mongoose versions so changed push() out for concat()
+	   user.tokens.push({acess, token});
+	*/
+
+
+  return user.save().then(() => {
+	return token;
+  });
+
+};
+
+
+
+// create a model
+const User = mongoose.model('User', UserSchema);
 
 
 module.exports = { User };
