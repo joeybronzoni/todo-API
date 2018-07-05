@@ -1,5 +1,26 @@
+const bcrypt = require('bcryptjs');
+
+
+ var password = '123abc';
+// bcrypt.genSalt(10, (err, salt) => {
+//   bcrypt.hash(password, salt, (err, hash) => {
+// 	console.log((hash));
+//   });
+// });
+
+var hashedPassword = '$2a$10$up.iWPaGiljRQbsFUAKkguuS7ZoSiGZ6z/s3Q3mPIDLuSnj2aafuK';
+bcrypt.compare(password, hashedPassword, (err, res) => {
+  console.log(res);;
+});
+
+
+
+// jsonwebtoken (jwt)
+/*
+
 const { SHA256 } = require('crypto-js');
 const jwt = require('jsonwebtoken');
+
 
 const data = {
   id: 10
@@ -42,12 +63,14 @@ console.log(decoded);
 // } else {
 //   console.log('Data was changed. Do not trust!');
 // }
+*/
 
-
-
+// jwt, hashing cont...
 /* hashing is a one way algorith, we get the same hash value for the same
    variable that we pass in to the SHA256();
+
    - this won't protect us in the middle of transactions,we will use https for that
+
    - we use hashing so that if changes are made we can deny the user
    - there is a whole standard that's called jsonwebtoken
      - jwt.sign: takes the obj and signs it, creates the hash
@@ -57,8 +80,18 @@ console.log(decoded);
       -if you change the secret or the token we get an error
        -var decoded = jwt.verify(token + '1', '123abc');
        -var decoded = jwt.verify(token, '123abcc');
+
 */
 
+
+// bcrypt
+/*
+   -there are many versions of bcrypt but "bcryptjs" is the most reliable
+   -bcryptjs is written in all javascript and doesn't have any dependencies
+   -another one called 'bcrypt' that uses the same api but people run into
+   problems especially accross operating systems
+
+*/
 
 
 

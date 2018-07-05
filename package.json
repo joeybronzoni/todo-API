@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/joeybronzoni/todo-API#readme",
   "dependencies": {
+    "bcryptjs": "^2.3.0",
     "body-parser": "^1.15.2",
     "crypto-js": "^3.1.6",
     "dotenv": "^6.0.0",
