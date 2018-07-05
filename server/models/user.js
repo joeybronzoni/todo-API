@@ -41,6 +41,8 @@ UserSchema.methods.toJSON = function () {
   return _.pick(userObject, ['_id', 'email']);
 };
 
+
+
 UserSchema.methods.generateAuthToken = function () {
   const user = this;
   const access = 'auth';
@@ -54,6 +56,17 @@ UserSchema.methods.generateAuthToken = function () {
 	return token;
   });
 
+};
+
+// $pull lets you remove items from an array that match a certain criteria
+UserSchema.methods.removeToken = function (token) {
+  const user = this;
+
+  return user.update({
+	$pull: {
+	  tokens: { token }
+	}
+  });
 };
 
 UserSchema.statics.findByToken = function(token) {
@@ -96,6 +109,8 @@ UserSchema.statics.findByCredentials = function (email, password) {
 
 };
 
+
+
 //mongoose-middleware (need access 'this' binding)
 UserSchema.pre('save', function (next) {
   const user = this;
@@ -114,7 +129,6 @@ UserSchema.pre('save', function (next) {
 		});
 	  });
 	});
-
 
   } else {
 
