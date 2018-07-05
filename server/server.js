@@ -118,7 +118,7 @@ app.patch('/todos/:id', (req,res) => {
 	  if (!todo) {
 		return res.status(400).send();
 	  }
-	  console.log('todo, line 170-server.js: ', todo);
+	  // console.log('todo, line 170-server.js: ', todo);
 	  res.send({todo});
 	})
 	.catch((err) => {

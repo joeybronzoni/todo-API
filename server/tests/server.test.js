@@ -252,7 +252,6 @@ describe('POST /users', () => {
 	  .send({email, password})
 	  .expect(200)
 	  .expect((res) => {
-		console.log('res here:" ', res.body);
 		expect(res.headers['x-auth']).toExist();
 		expect(res.body._id).toExist();
 		expect(res.body.email).toBe(email);
@@ -266,9 +265,7 @@ describe('POST /users', () => {
 		  expect(user).toExist();
 		  expect(user.password).toNotBe(password);
 		  done();
-		});
-
-
+		}).catch(e => done(e));
 	  });
   });
 
@@ -311,6 +308,67 @@ describe('POST /users', () => {
 		});
 	  });
   });
+});
 
+
+describe('POST /users/login', () => {
+  //  Use conditional or expect()
+  it('does login user and return auth token', (done) => {
+	 const email = users[1].email;
+	 const password = users[1].password;
+
+	request(app)
+	  .post('/users/login')
+	  .send({
+		email,
+		password
+	  })
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.headers['x-auth']).toExist();
+	  })
+	  .end((err, res) => {
+		if (err) {
+		  return done(err);
+		}
+
+		User.findById(users[1]._id)
+		  .then((user) => {
+			expect(user.tokens[0]).toInclude({
+			  access: 'auth',
+			  token: res.headers['x-auth']
+			});
+			done();
+		  }).catch(e => done(e));
+	  });
+  });
+
+  // pass invlaid passwd, should be 400, should not exist token.length =0
+  it('does reject invalid login', (done) => {
+	const email = users[1].email;
+	const password = users[1].password +'1';
+
+	request(app)
+	  .post('/users/login')
+	  .send({
+		email,
+		password
+	  })
+	  .expect(400)
+	  .expect((res) => {
+		expect(res.headers['x-auth']).toNotExist();
+	  })
+	  .end((err, res) => {
+		if (err) {
+		  return done(err);
+		}
+
+		User.findById(users[1]._id)
+		  .then((user) => {
+			expect(user.tokens.length).toBe(0);
+			done();
+		  }).catch(e => done(e));
+	  });
+  });
 
 });
