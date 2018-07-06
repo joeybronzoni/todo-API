@@ -7,12 +7,14 @@ npm-debug.log
 *.iml
 /.idea
 
- #.env variables 
-*.env 
-# backup-saved files 
-*~ 
-# #files 
+ #.env variables
+*.env
+# backup-saved files
+*~
+# #files
  \#*\#
 
 #server logs
  *.log
+
+server/config/config.json

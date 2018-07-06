@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/server.js",
 	"watch": "nodemon server/server.js",
+	"remote": "export NODE_ENV=mlab || SET \"NODE_ENV=mlab\" && nodemon server/server.js",
     "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",
 	"test-dot": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter dot server/**/*.test.js",
 	"test-nyan": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter nyan server/**/*.test.js",
