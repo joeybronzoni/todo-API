@@ -138,12 +138,9 @@ describe('DELETE /todos/:id', () => {
 		  done();
 		})
 		  .catch((err) => done(err));
-
 	  });
 
   });
-
-
 
   //  Use conditional or expect()
   it('does return a 404 if todo not found', (done) => {
@@ -218,7 +215,7 @@ describe('GET /users/me', () => {
 
 	  request(app)
 		.get('/users/me')
-		.set('x-auth', users[0].tokens[0].token)
+	  .set('x-auth', users[0].tokens[0].token)
 		.expect(200)
 		.expect((res) => {
 		  expect(res.body._id).toBe(users[0]._id.toHexString());
@@ -369,6 +366,35 @@ describe('POST /users/login', () => {
 			done();
 		  }).catch(e => done(e));
 	  });
+  });
+
+});
+
+describe('DELETE /users/me/token', () => {
+  //  Use conditional or expect()
+  it('does remove auth token on logout', (done) => {
+	let token = users[0].tokens[0].token;
+	console.log('token:' , token);
+	request(app)
+	  .delete('/users/me/token')
+	  .send({ token })
+	  .set('x-auth', users[0].tokens[0].token)
+	  .expect(200)
+	  .expect((res) => {
+		expect(res.body.token).toEqual(null);
+	  })
+	  .end((err, res) => {
+		if (err) {
+		  return done(err);
+		}
+
+		User.findById(users[0]._id)
+		  .then((user) => {
+			expect(user.tokens.length).toBe(0);
+			done();
+		  }).catch(e => done(e));
+	  });
+
   });
 
 });
