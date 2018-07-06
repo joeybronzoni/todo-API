@@ -1,7 +1,5 @@
 const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
-const _ = require('lodash');
-const bcrypt  = require('bcryptjs');
 
 const { Todo } = require('./../../models/todo');
 
@@ -22,16 +20,23 @@ const users = [{
   _id: userTwoId,
   email: 'janice@gmail.com',
   password: 'userTwoPass',
+    tokens: [{
+	access: 'auth',
+	token: jwt.sign({_id: userTwoId, access: 'auth'}, 'OliverJames').toString()
+  }]
 }];
 
 const todos = [{
   _id: new ObjectID(),
-  text: 'First test todo'
-},{
+  text: 'First test todo',
+  _creator: userOneId
+
+}, {
   _id: new ObjectID(),
   text: 'Second test todo',
   completed: true,
-  completed_at: 333
+  completed_at: 333,
+  _creator: userTwoId
 }];
 
 const populateTodos = (done) => {
@@ -39,6 +44,8 @@ const populateTodos = (done) => {
 	return Todo.insertMany(todos);
   }).then(() => {
 	done();
+  }).catch((err) => {
+	done(err);
   });
 };
 
@@ -48,7 +55,7 @@ const populateUsers = (done) => {
 	const userTwo = new User(users[1]).save();
 
 	return Promise.all([userOne, userTwo]);
-  }).then(() => done());
+  }).then(() => done()).catch(err => done(err));
 
 };
 module.exports = { todos, populateTodos, users, populateUsers };

@@ -1,7 +1,5 @@
 const { User } = require('./../models/user');
 
-
-
 // Middleware function for private routes
 const authenticate =(req, res, next) => {
   const token = req.header('x-auth');

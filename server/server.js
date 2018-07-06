@@ -18,28 +18,32 @@ const app = express();
 
 app.use(bodyParser.json());
 
-
-app.post('/todos', (req, res) => {
+// add authenticate-middleware to make private:
+app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo({
-	text: req.body.text
+	text: req.body.text,
+	_creator: req.user._id
   });
 
-  todo.save().then((doc) => {
-	res.send(doc);
-  }, (e) => {
-	res.status(400).send(e);
-  });
+  todo.save()
+	.then((doc) => {
+	  res.send(doc);
+	}, (e) => {
+	  res.status(400).send(e);
+	});
 });
 
-app.get('/todos', (req,res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req,res) => {
+  Todo.find({
+	_creator: req.user._id
+  }).then((todos) => {
 	res.send({ todos });
   }, (e) => {
 	res.status(400).send(e);
   });
 });
 
-app.get('/todos/:id', (req,res) => {
+app.get('/todos/:id', authenticate, (req,res) => {
   const id = req.params.id;
 
   // validate id
@@ -48,27 +52,31 @@ app.get('/todos/:id', (req,res) => {
 	return res.status(404).send();
   }
   // findById()
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+	_id: id,
+	_creator: req.user._id
+  })
+	.then((todo) => {
 
-	if (!todo) {
-	  // use return to stop the execution
-	  return res.status(404).send();
-	}
-	/* success: we don't want to send the todo back in case of sensitive info
-	   !*!* Note, we could send the res like this: res.send(todo) and that would work but we should
-	   send it in an object where the todo is attached as a property using ES6 object definition so
-	   we can tac on custom status codes etc.
-	*/
-	res.send({ todo });
-  }).catch((e) => {
-	// we may not want to send any sensitive info back
-	res.status(400).send();
-  });
+	  if (!todo) {
+		// use return to stop the execution
+		return res.status(404).send();
+	  }
+	  /* success: we don't want to send the todo back in case of sensitive info
+		 !*!* Note, we could send the res like this: res.send(todo) and that would work but we should
+		 send it in an object where the todo is attached as a property using ES6 object definition so
+		 we can tac on custom status codes etc.
+	  */
+	  res.send({ todo });
+	}).catch((e) => {
+	  // we may not want to send any sensitive info back
+	  res.status(400).send();
+	});
 
 });
 
 // use pick to grab the email and the password
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   // get id
   const id = req.params.id;
 
@@ -77,18 +85,22 @@ app.delete('/todos/:id', (req, res) => {
 	return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
-	// remove todo by id
-	if (!todo) {
-	  return res.status(404).send();
-	}
+  Todo.findOneAndRemove({
+	_id: id,
+	_creator: req.user._id
+  })
+	.then((todo) => {
+	  // remove todo by id
+	  if (!todo) {
+		return res.status(404).send();
+	  }
 
-	res.send({todo});
-  }).catch((e) => {res.status(400).send();});
+	  res.send({todo});
+	}).catch((e) => {res.status(400).send();});
 
 });
 
-app.patch('/todos/:id', (req,res) => {
+app.patch('/todos/:id', authenticate, (req,res) => {
 
   // grab id form parameters
   var id = req.params.id;
@@ -111,44 +123,43 @@ app.patch('/todos/:id', (req,res) => {
 	body.completed_at = null;
   }
 
-
-  /* We make are call to findByIdAndUpdate */
-  Todo.findByIdAndUpdate(id, {$set: body}, {new: true})
+  // check notes:
+  Todo.findOneAndUpdate({ _id: id, _creator: req.user._id }, { $set: body }, { new: true })
 	.then((todo) => {
 	  if (!todo) {
-		return res.status(400).send();
+		return res.status(404).send();
 	  }
 	  // console.log('todo, line 170-server.js: ', todo);
 	  res.send({todo});
-	})
-	.catch((err) => {
+	}).catch((err) => {
 	  res.status(400).send();
 	});
 
+  app.post('/users', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
+
+	var user = new User(body);
+
+	user.save()
+	  .then(() => {
+		return user.generateAuthToken();
+	  }).then((token) => {
+		res.header('x-auth', token).send(user);
+	  }).catch((e) => {
+		// console.log('this is the error: ', e.errmsg);
+		res.status(400).send(e);
+	  });
+  });
 });
 
-app.post('/users', (req, res) => {
-  var body = _.pick(req.body, ['email', 'password']);
-
-  var user = new User(body);
-
-  user.save()
-	.then(() => {
-	  return user.generateAuthToken();
-	}).then((token) => {
-	  res.header('x-auth', token).send(user);
-	}).catch((e) => {
-	  // console.log('this is the error: ', e.errmsg);
-	  res.status(400).send(e);
-	});
-});
 
 app.get('/users', (req,res) => {
-  User.find().then((users) => {
-	res.send({ users });
-  }, (e) => {
-	res.status(400).send(e);
-  });
+  User.find()
+	.then((users) => {
+	  res.send({ users });
+	}, (e) => {
+	  res.status(400).send(e);
+	});
 });
 
 app.get('/users/me', authenticate, (req,res) => {
@@ -160,12 +171,13 @@ app.post('/users/login', (req, res) => {
 
   User.findByCredentials(body.email, body.password)
 	.then((user) => {
-	  return user.generateAuthToken().then((token) => {
-		res.header('x-auth', token).send(user);
-	  });
+	  return user.generateAuthToken()
+		.then((token) => {
+		  res.header('x-auth', token).send(user);
+		});
 	}).catch((e) => {
 	  res.status(400).send();
-  });
+	});
 
 });
 

@@ -7,7 +7,19 @@
     "start": "node server/server.js",
 	"watch": "nodemon server/server.js",
     "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",
-    "test-watch": "nodemon --exec 'npm test'"
+	"test-dot": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter dot server/**/*.test.js",
+	"test-nyan": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter nyan server/**/*.test.js",
+	"test-prog": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter progress server/**/*.test.js",
+	"test-min": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter min server/**/*.test.js",
+	"test-tap": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter tap server/**/*.test.js",
+	"test-land": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter landing server/**/*.test.js",
+	"test-x": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter xunit server/**/*.test.js",
+	"test-list": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter list server/**/*.test.js",
+	"test-jcov": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter json-cov server/**/*.test.js",
+	"test-jstream": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter json-stream server/**/*.test.js",
+	"test-md": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha --reporter markdown server/**/*.test.js",
+    "test-watch": "nodemon --exec 'npm test'",
+	"test-watch-l": "nodemon --exec 'npm run test-tap'"
   },
   "engines": {
     "node": "10.1.0"
