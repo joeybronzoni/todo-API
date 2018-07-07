@@ -15,7 +15,6 @@ const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 beforeEach(populateUsers);
 beforeEach(populateTodos);
 
-
 describe('POST /todos', () => {
   //  Use conditional or expect()
   it('does create a new todo', (done) => {
@@ -83,7 +82,6 @@ describe('GET /todos', () => {
 
 });
 
-
 describe('GET /todo/:id', () => {
  //  Use conditional or expect()
   it('does return todo doc', (done) => {
@@ -133,22 +131,19 @@ describe('GET /todo/:id', () => {
 describe('DELETE /todos/:id', () => {
 
   it('does remove a todo', (done) => {
-	let hexId = todos[1]._id.toHexString();
+	let hexId = todos[0]._id.toHexString();
 
 	request(app)
 	  .delete(`/todos/${hexId}`)
 	  .set('x-auth', users[1].tokens[0].token)
-	  .expect(200)
-	  .expect((res) => {
-		expect(res.body.todo._id).toBe(hexId);
-	  })
+	  .expect(404)
 	  .end((err, res) => {
 		if (err) {
 		  return done(err);
 		}
 		// query db using findById() toNotExist
 		Todo.findById(hexId).then((todo) => {
-		  expect(todo).toNotExist(hexId);
+		  expect(todo).toBeTruthy();
 		  done();
 		})
 		  .catch((err) => done(err));
@@ -169,7 +164,7 @@ describe('DELETE /todos/:id', () => {
 		}
 		// query db using findById() toNotExist
 		Todo.findById(hexId).then((todo) => {
-		  expect(todo).toExist();
+		  expect(todo).toBeTruthy();
 		  done();
 		})
 		  .catch((err) => done(err));
@@ -215,11 +210,11 @@ describe('PATCH /todos/:id', () => {
 	  .expect((res) => {
 		expect(res.body.todo.text).toBe(text);
 		expect(res.body.todo.completed).toBe(true);
-		expect(res.body.todo.completed_at).toBeA('number');
+		// expect(res.body.todo.completed_at).toBeA('number');
+		expect(typeof res.body.todo.completed_at).toBe('number');
 	  })
 	  .end(done);
   });
-
 
   it('does NOT update the todo created by other user', (done) => {
 	let hexId = todos[0]._id.toHexString();
@@ -251,7 +246,7 @@ describe('PATCH /todos/:id', () => {
 	  .expect((res) => {
 		expect(res.body.todo.text).toBe(text);
 		expect(res.body.todo.completed).toBe(false);
-		expect(res.body.todo.completed_at).toNotExist();
+		expect(res.body.todo.completed_at).toBeFalsy();
 	  })
 	  .end(done);
   });
@@ -299,8 +294,8 @@ describe('POST /users', () => {
 	  .send({email, password})
 	  .expect(200)
 	  .expect((res) => {
-		expect(res.headers['x-auth']).toExist();
-		expect(res.body._id).toExist();
+		expect(res.headers['x-auth']).toBeTruthy();
+		expect(res.body._id).toBeTruthy();
 		expect(res.body.email).toBe(email);
 	  })
 	  .end((err) => {
@@ -309,8 +304,8 @@ describe('POST /users', () => {
 		}
 
 		User.findOne({email}).then((user) => {
-		  expect(user).toExist();
-		  expect(user.password).toNotBe(password);
+		  expect(user).toBeTruthy();
+		  expect(user.password).not.toBe(password);
 		  done();
 		}).catch(e => done(e));
 	  });
@@ -342,7 +337,7 @@ describe('POST /users', () => {
 	  .send({email, password})
 	  .expect(400)
 	  .expect((res) => {
-		expect(email).toExist();
+		expect(email).toBeTruthy();
 	  })
 	  .end((err) => {
 		if (err) {
@@ -350,7 +345,7 @@ describe('POST /users', () => {
 		}
 
 		User.findOne({ email }).then((user) => {
-		  expect(user).toExist();
+		  expect(user).toBeTruthy();
 		  done();
 		});
 	  });
@@ -372,7 +367,7 @@ describe('POST /users/login', () => {
 	  })
 	  .expect(200)
 	  .expect((res) => {
-		expect(res.headers['x-auth']).toExist();
+		expect(res.headers['x-auth']).toBeTruthy();
 	  })
 	  .end((err, res) => {
 		if (err) {
@@ -381,7 +376,7 @@ describe('POST /users/login', () => {
 
 		User.findById(users[1]._id)
 		  .then((user) => {
-			expect(user.tokens[1]).toInclude({
+			expect(user.toObject().tokens[1]).toMatchObject({
 			  access: 'auth',
 			  token: res.headers['x-auth']
 			});
@@ -403,7 +398,7 @@ describe('POST /users/login', () => {
 	  })
 	  .expect(400)
 	  .expect((res) => {
-		expect(res.headers['x-auth']).toNotExist();
+		expect(res.headers['x-auth']).toBeFalsy();
 	  })
 	  .end((err, res) => {
 		if (err) {
@@ -431,7 +426,7 @@ describe('DELETE /users/me/token', () => {
 	  .set('x-auth', users[0].tokens[0].token)
 	  .expect(200)
 	  .expect((res) => {
-		expect(res.body.token).toEqual(null);
+		expect(res.body.token).toEqual(undefined);
 	  })
 	  .end((err, res) => {
 		if (err) {
